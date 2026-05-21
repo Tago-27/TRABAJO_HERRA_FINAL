@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% block title %}Reservar - {{ cancha.nombre }}{% endblock %}
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <a href="{% url 'inicio' %}" class="btn-back">&#8592; Volver</a>
+        <h1 class="page-title">Reservar cancha</h1>
+        <p class="page-sub">Completa el formulario para reservar {{ cancha.nombre }}</p>
+    </div>
+
+    <div class="reserva-layout">
+        <div class="auth-card">
+            <form method="post" class="auth-form">
+                {% csrf_token %}
+                {% for field in form %}
+                <div class="form-group">
+                    <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        {% for error in field.errors %}<p class="form-error">{{ error }}</p>{% endfor %}
+                    {% endif %}
+                </div>
+                {% endfor %}
+                {% if form.non_field_errors %}
+                    <div class="form-alert form-alert-error">
+                        {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+                    </div>
+                {% endif %}
+                <button type="submit" class="btn btn-primary btn-block">Confirmar reserva</button>
+            </form>
+
+            <!-- Horarios ocupados -->
+            <div id="horarios-box" style="margin-top:20px;display:none;">
+                <h4 style="margin-bottom:8px;color:var(--text-primary,#0d1117);">&#128336; Horarios ya reservados ese día</h4>
+                <div id="horarios-lista"></div>
+            </div>
+        </div>
+
+        <div class="cancha-resumen">
+            <div class="resumen-card">
+                <h3 class="resumen-title">Resumen</h3>
+                <div class="resumen-icon">
+                    {% if cancha.tipo == 'futbol' %}&#x26BD;
+                    {% elif cancha.tipo == 'tenis' %}&#127934;
+                    {% elif cancha.tipo == 'baloncesto' %}&#127936;
+                    {% else %}&#127952;{% endif %}
+                </div>
+                <p class="resumen-nombre">{{ cancha.nombre }}</p>
+                <p class="resumen-tipo">{{ cancha.get_tipo_display }}</p>
+                <div class="resumen-datos">
+                    <div class="resumen-fila">
+                        <span>Precio por hora</span>
+                        <strong>${{ cancha.precio_hora|floatformat:0 }}</strong>
+                    </div>
+                    <div class="resumen-fila">
+                        <span>Horario disponible</span>
+                        <strong>{{ cancha.hora_apertura|time:"H:i" }} - {{ cancha.hora_cierre|time:"H:i" }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+  const fechaInput = document.getElementById('id_fecha');
+  if (!fechaInput) return;
+
+  fechaInput.addEventListener('change', function() {
+    const fecha = this.value;
+    if (!fecha) return;
+    fetch(`{% url 'horarios_ocupados' cancha.id %}?fecha=${fecha}`)
+      .then(r => r.json())
+      .then(data => {
+        const box = document.getElementById('horarios-box');
+        const lista = document.getElementById('horarios-lista');
+        if (data.horarios.length === 0) {
+          box.style.display = 'block';
+          lista.innerHTML = '<p style="color:#166534;font-size:14px;">✅ No hay reservas ese día. ¡Todos los horarios disponibles!</p>';
+        } else {
+          box.style.display = 'block';
+          lista.innerHTML = data.horarios.map(h =>
+            `<div style="display:inline-block;margin:4px;padding:6px 12px;background:#fee2e2;border-radius:6px;font-size:13px;color:#991b1b;font-weight:600;">
+              🚫 ${h.inicio} – ${h.fin}
+            </div>`
+          ).join('');
+        }
+      })
+      .catch(() => {});
+  });
+})();
+</script>
+{% endblock %}

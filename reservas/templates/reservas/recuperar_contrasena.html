@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}Recuperar contraseña - CanchasSport{% endblock %}
+{% block content %}
+<div class="page-container" style="max-width:420px;margin:60px auto;">
+  <div class="auth-card">
+    <div style="text-align:center;margin-bottom:24px;">
+      <p style="font-size:40px;margin:0;">🔑</p>
+      <h1 class="page-title" style="margin-top:8px;">Recuperar contraseña</h1>
+      <p class="page-sub">Ingresa tu correo y te enviaremos una contraseña temporal.</p>
+    </div>
+    <form method="post" class="auth-form">
+      {% csrf_token %}
+      <div class="form-group">
+        <label class="form-label" for="email">Correo electrónico</label>
+        <input type="email" name="email" id="email" class="form-control"
+               placeholder="tucorreo@ejemplo.com" required autofocus>
+      </div>
+      {% if messages %}
+        {% for msg in messages %}
+          <div class="form-alert form-alert-{% if msg.tags == 'error' %}error{% else %}success{% endif %}">
+            {{ msg }}
+          </div>
+        {% endfor %}
+      {% endif %}
+      <button type="submit" class="btn btn-primary btn-block">Enviar contraseña temporal</button>
+    </form>
+    <p style="text-align:center;margin-top:16px;font-size:14px;">
+      <a href="{% url 'login' %}" style="color:var(--primary,#1a7a4a);">&#8592; Volver al inicio de sesión</a>
+    </p>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: canchas-deportivas
+    env: python
+    region: oregon
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --no-input && python manage.py migrate
+    startCommand: gunicorn canchas_deportivas.wsgi:application
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: canchas-deportivas-db
+          property: connectionString
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+
+databases:
+  - name: canchas-deportivas-db
+    databaseName: canchas_deportivas
+    user: canchas_user
+    region: oregon
