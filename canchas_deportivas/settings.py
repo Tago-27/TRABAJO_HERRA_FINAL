@@ -4,11 +4,7 @@ import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.environ.get('SECRET_KEY')
-if not SECRET_KEY:
-    if os.environ.get('RENDER'):
-        raise RuntimeError('SECRET_KEY must be set in production')
-    SECRET_KEY = 'django-insecure-local-dev-only'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-local-dev-only')
 
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
