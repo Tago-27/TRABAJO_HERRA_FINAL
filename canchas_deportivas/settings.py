@@ -4,7 +4,11 @@ import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-canchas-dev-key-cambiar-en-produccion')
+SECRET_KEY = os.environ.get('SECRET_KEY')
+if not SECRET_KEY:
+    if os.environ.get('RENDER'):
+        raise RuntimeError('SECRET_KEY must be set in production')
+    SECRET_KEY = 'django-insecure-local-dev-only'
 
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
@@ -89,6 +93,16 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
+
+# ── SEGURIDAD HTTPS (producción) ──
+# Render termina SSL en su proxy y reenvía HTTP a gunicorn con este header
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = not DEBUG
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+SECURE_HSTS_SECONDS = 31536000 if not DEBUG else 0
+SECURE_HSTS_INCLUDE_SUBDOMAINS = not DEBUG
+SECURE_HSTS_PRELOAD = not DEBUG
 
 # ── EMAIL (recuperación de contraseña) ──
 EMAIL_BACKEND = os.environ.get(
